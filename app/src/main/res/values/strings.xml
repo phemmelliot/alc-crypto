@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">concrypt</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <string name="australian">Australian Dollar to Crypto</string>
+    <string name="brazil">Brazilian Real to Crypto</string>
+    <string name="canada">Canadian Dollar to Crypto</string>
+    <string name="chile">Chilean Peso to Crypto</string>
+    <string name="china">Chinese Yuan to Crypto</string>
+    <string name="britain">British Pound Sterling to Crypto</string>
+    <string name="euro">European Euro to Crypto</string>
+    <string name="india">Indian Rupee to Crypto</string>
+    <string name="indonesia">Indonesian Rupiah to Crypto</string>
+    <string name="isreal">New Isreali Sheqel to Crypto</string>
+    <string name="japan">Japanese Yen to Crypto</string>
+    <string name="malaysia">Malaysian Ringgit to Crypto</string>
+    <string name="newZealand">New Zealand Dollar to Crypto</string>
+    <string name="nigeria">Nigerian Naira to Crypto</string>
+    <string name="singapore">Singapore Dollar to Crypto</string>
+    <string name="southAfrica">South African Rand to Crypto</string>
+    <string name="korea">South Korea Won to Crypto</string>
+    <string name="switzerland">Swiss Franc to Crypto</string>
+    <string name="us">U.S Dollar to Crypto</string>
+    <string name="russia">Russian Ruble to Crypto</string>
+
+    <string name="collapse">Convert Between Currencies</string>
+    <string name="below">Choose Below</string>
+
+    <string-array name="bitcoinEntries">
+        <item name ="bitcoin">Bitcoin</item>
+        <item name="litecoin">Litecoin</item>
+        <item name="namecoin">Namecoin</item>
+        <item name="ethereum">Ethereum</item>
+        <item name="swiftcoin">SwiftCoin</item>
+        <item name="peercoin">PeerCoin</item>
+        <item name="dogecoin">DogeCoin</item>
+    </string-array>
+
+</resources>
