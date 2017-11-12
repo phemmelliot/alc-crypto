@@ -31,9 +31,9 @@
     <string name="below">Choose Below</string>
 
     <string-array name="bitcoinEntries">
-        <item name ="bitcoin">Bitcoin</item>
-        <item name="litecoin">Litecoin</item>
-        <item name="namecoin">Namecoin</item>
+        <item name ="bitcoin">BitCoin</item>
+        <item name="litecoin">LiteCoin</item>
+        <item name="namecoin">NameCoin</item>
         <item name="ethereum">Ethereum</item>
         <item name="swiftcoin">SwiftCoin</item>
         <item name="peercoin">PeerCoin</item>

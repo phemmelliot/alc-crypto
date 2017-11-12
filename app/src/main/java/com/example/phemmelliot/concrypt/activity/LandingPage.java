@@ -1,29 +1,25 @@
 package com.example.phemmelliot.concrypt.activity;
 
-import android.content.DialogInterface;
-import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v7.graphics.*;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,9 +27,9 @@ import com.bumptech.glide.Glide;
 import com.example.phemmelliot.concrypt.R;
 
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.example.phemmelliot.concrypt.adapter.ConcryptAdapter;
@@ -49,6 +45,9 @@ import retrofit2.Response;
 public class LandingPage extends AppCompatActivity implements ConcryptAdapter.onItemClickListener{
     private ArrayList<Currency> currencies = new ArrayList<>();
     private StringBuilder input = new StringBuilder();
+    private String TAG = getClass().getSimpleName();
+    private LinearLayout layout;
+    private ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,8 +63,9 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
+
         try {
-            Glide.with(this).load(R.drawable.bitcoin2).centerCrop().into((ImageView) findViewById(R.id.backdrop));
+            Glide.with(this).load(R.drawable.bitcoin3).centerCrop().into((ImageView) findViewById(R.id.backdrop));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -157,62 +157,110 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
     @Override
     public void onItemClick(int itemIndex) {
         //Toast.makeText(this, "It entered onItemClick", Toast.LENGTH_LONG).show();
-        String code = currencies.get(itemIndex).getCode();
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setView(R.layout.dialog);
-        final AlertDialog alertDialog = dialog.create();
-        alertDialog.show();
+        HashMap<String, String> entries = new HashMap<>();
+        entries.put("BitCoin", "BTC");
+        entries.put("LiteCoin", "LTC");
+        entries.put("NameCoin", "NMC");
+        entries.put("Ethereum", "ETH");
+        entries.put("SwiftCoin", "STC");
+        entries.put("PeerCoin", "PPC");
+        entries.put("DogeCoin", "DOGE");
+
+        final String code = currencies.get(itemIndex).getCode();
+
+        final AlertDialog dialog = new AlertDialog.Builder(this).create();
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog, null);
+        dialog.setView(view);
+
+        final TextView text1 = view.findViewById(R.id.currency);
+        layout = view.findViewById(R.id.layout);
+        progressBar = view.findViewById(R.id.progress);
+        final EditText userInput = view.findViewById(R.id.edit);
+        String hint1 = getString(currencies.get(itemIndex).getName());
+        String hint = hint1.substring(0, hint1.length() - 10);
+        userInput.setHint(hint);
+        Button leave = view.findViewById(R.id.ok);
+        Button convert = view.findViewById(R.id.convert);
+        Spinner spinner = view.findViewById(R.id.spinner);
+
+        final String convertString = entries.get(spinner.getSelectedItem().toString());
         Map<String, String> data = new HashMap<>();
         data.put("fsym", code);
-        data.put("tsyms", input.toString());
+        data.put("tsyms", convertString);
 
         ApiInterface apiService =
                 ApiClient.getClient().create(ApiInterface.class);
 
         final Call<Conversion> call = apiService.getPrice(data);
 
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog, null);
-        final TextView text1 = view.findViewById(R.id.currency);
-        Button convert = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        Button leave = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
 
-        convert.setTextColor(getResources().getColor(R.color.button));
-        convert.setBackgroundResource(R.color.colorPrimaryDark);
-
-        leave.setTextColor(getResources().getColor(R.color.button));
-        leave.setBackgroundResource(R.color.colorPrimaryDark);
 
 
         leave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(LandingPage.this, "It entered leave button", Toast.LENGTH_SHORT).show();
-                alertDialog.dismiss();
+
+                dialog.dismiss();
             }
         });
 
         convert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                call.enqueue(new Callback<Conversion>() {
-                    @Override
-                    public void onResponse(Call<Conversion> call, Response<Conversion> response) {
-                        int statusCode = response.code();
-                        text1.setText(response.body().getResult());
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<Conversion> call, Throwable t) {
-                        // Log error here since request failed
-                        //Log.e(TAG, t.toString());
-                    }
-                });
+                fetch(call, text1, userInput, code, convertString);
             }
         });
 
 
-
+        dialog.show();
 
     }
+
+    public void fetch(Call<Conversion> call, final TextView text1, final EditText userInput, final String code, final String convertString)
+    {
+        showProgress();
+        call.clone().enqueue(new Callback<Conversion>() {
+            @Override
+            public void onResponse(@NonNull Call<Conversion> call, @NonNull Response<Conversion> response) {
+                if(response.body() == null)
+                    Toast.makeText(LandingPage.this, "response is null", Toast.LENGTH_LONG).show();
+                hideProgress();
+                Double apiResult = response.body().getResult();
+                double inputAsDouble = Double.parseDouble(userInput.getText().toString());
+                double result = apiResult * inputAsDouble;
+                DecimalFormat REAL_FORMATTER = new DecimalFormat("0.##############");
+                String showText = inputAsDouble + code + " converts to " + REAL_FORMATTER.format(result) + convertString;
+                text1.setText(showText);
+
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Conversion> call, Throwable t) {
+                // Log error here since request failed
+                Log.e(TAG, t.toString());
+                Toast.makeText(LandingPage.this, "The request failed", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void showProgress()
+    {
+        layout.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+    public void hideProgress()
+    {
+        layout.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
+    }
+
 }
+
+
+
+
+
+
+
+
+

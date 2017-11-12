@@ -6,15 +6,14 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class Conversion {
-    @SerializedName(value = "AUD", alternate = {"BRL","CAD","CLD","CNY","GBP","EUR","INR","IDR","ILS","JPY",
-            "MYR","NZD","NGN","SGD","ZAR","KRW","CHF","USD"})
-    private String result;
+    @SerializedName(value = "BTC", alternate = {"LTC","NMC","ETH","STC","PPC","DOGE"})
+    private double result;
 
-    public String getResult() {
+    public double getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(double result) {
         this.result = result;
     }
 }
