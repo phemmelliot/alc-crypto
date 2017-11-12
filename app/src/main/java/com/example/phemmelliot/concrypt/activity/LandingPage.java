@@ -1,5 +1,8 @@
 package com.example.phemmelliot.concrypt.activity;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
@@ -7,6 +10,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -157,7 +162,7 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
     @Override
     public void onItemClick(int itemIndex) {
         //Toast.makeText(this, "It entered onItemClick", Toast.LENGTH_LONG).show();
-        HashMap<String, String> entries = new HashMap<>();
+        final HashMap<String, String> entries = new HashMap<>();
         entries.put("BitCoin", "BTC");
         entries.put("LiteCoin", "LTC");
         entries.put("NameCoin", "NMC");
@@ -181,17 +186,13 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
         userInput.setHint(hint);
         Button leave = view.findViewById(R.id.ok);
         Button convert = view.findViewById(R.id.convert);
-        Spinner spinner = view.findViewById(R.id.spinner);
+        final Spinner spinner = view.findViewById(R.id.spinner);
 
-        final String convertString = entries.get(spinner.getSelectedItem().toString());
-        Map<String, String> data = new HashMap<>();
-        data.put("fsym", code);
-        data.put("tsyms", convertString);
 
-        ApiInterface apiService =
+        final ApiInterface apiService =
                 ApiClient.getClient().create(ApiInterface.class);
 
-        final Call<Conversion> call = apiService.getPrice(data);
+
 
 
 
@@ -207,7 +208,21 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
         convert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fetch(call, text1, userInput, code, convertString);
+                hideKeyboard();
+                String convertString = entries.get(spinner.getSelectedItem().toString());
+                Map<String, String> data = new HashMap<>();
+                data.put("fsym", code);
+                data.put("tsyms", convertString);
+                final Call<Conversion> call = apiService.getPrice(data);
+                if(networkAvailable() && !TextUtils.isEmpty(userInput.getText().toString()))
+                    fetch(call, text1, userInput, code, convertString);
+                else if(!networkAvailable() && TextUtils.isEmpty(userInput.getText().toString()))
+                    Toast.makeText(LandingPage.this, "Check your internet and input something", Toast.LENGTH_LONG).show();
+                else if(TextUtils.isEmpty(userInput.getText().toString()))
+                    Toast.makeText(LandingPage.this, "No input", Toast.LENGTH_LONG).show();
+                else if(!networkAvailable())
+                    Toast.makeText(LandingPage.this, "Check your internet connection", Toast.LENGTH_LONG).show();
+
             }
         });
 
@@ -238,7 +253,8 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
             public void onFailure(@NonNull Call<Conversion> call, Throwable t) {
                 // Log error here since request failed
                 Log.e(TAG, t.toString());
-                Toast.makeText(LandingPage.this, "The request failed", Toast.LENGTH_LONG).show();
+                hideProgress();
+                Toast.makeText(LandingPage.this, "Try again", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -252,6 +268,25 @@ public class LandingPage extends AppCompatActivity implements ConcryptAdapter.on
     {
         layout.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
+    }
+
+    public boolean networkAvailable()
+    {
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = null;
+        if(manager.getActiveNetworkInfo() != null)
+          activeNetwork = manager.getActiveNetworkInfo();
+
+        return activeNetwork != null;
+
+
+    }
+    private void hideKeyboard() {
+        View view = getCurrentFocus();
+        if (view != null) {
+            ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).
+                    hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
 }
